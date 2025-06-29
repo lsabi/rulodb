@@ -127,6 +127,36 @@ async fn process_envelope_message(
             envelope.query_id,
             "Authentication not implemented",
         )),
+         // Evaluate and return query plan
+        Ok(proto::MessageType::Query_plan) => {
+             // TODO
+            // Copy process_query and do not make it return data result, but rather query plan
+             match process_query(db, &envelope.payload).await {
+                Ok(query_result) => {
+                   
+                    let response = create_response_wrapper(&envelope.query_id, query_result);
+                    let mut response_payload = Vec::new();
+                    match response.encode(&mut response_payload) {
+                        Ok(()) => Ok(proto::Envelope {
+                            version: proto::ProtocolVersion::Version1.into(),
+                            query_id: envelope.query_id.clone(),
+                            r#type: proto::MessageType::Response.into(),
+                            payload: response_payload,
+                        }),
+                        Err(err) => {
+                            log::error!("Query processing failed: {err}");
+                            Err(err.into())
+                        }
+                    }
+
+                    
+                }
+                Err(err) => {
+                    log::error!("Query Plan processing failed: {err}");
+                    log::error!("Error details: {err}");
+                    Ok(create_error_envelope(envelope.query_id, &err.to_string()))
+                }
+        },
         Ok(msg_type) => {
             let error_msg = format!("Unexpected message type from client: {msg_type:?}");
             Ok(create_error_envelope(envelope.query_id, &error_msg))
