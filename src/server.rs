@@ -168,6 +168,32 @@ async fn process_envelope_message(
     }
 }
 
+
+async fn explain_query(
+    db: Arc<dyn StorageBackend + Send + Sync>,
+    payload: &[u8],
+) -> Result<proto::query_result::Result, Box<dyn std::error::Error + Send + Sync>> {
+    let query = parse_query(payload)?;
+
+    let mut planner = Planner::new();
+    let plan = planner.plan(&query)?;
+    let plan = planner.optimize(plan)?;
+
+    let explanation = planner.explain(&plan);
+    log::debug!("Plan explanation:\n{explanation}");
+
+    /*
+    let mut evaluator = Evaluator::new(db);
+    let result = if let Some(cursor) = query.cursor.clone() {
+        evaluator.eval_with_cursor(&plan, Some(cursor)).await?
+    } else {
+        evaluator.eval(&plan).await?
+    };
+    */
+    Ok(result.result)
+}
+
+
 async fn process_query(
     db: Arc<dyn StorageBackend + Send + Sync>,
     payload: &[u8],
