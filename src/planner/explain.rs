@@ -1,9 +1,11 @@
 use crate::ast::*;
 use crate::planner::node::PlanNode;
 use std::fmt;
+use serde::{Serialize, Deserialize};
+use serde_json::to_string;
 
 /// Represents a complete explanation of a query plan
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PlanExplanation {
     pub nodes: Vec<ExplanationNode>,
     pub total_cost: f64,
@@ -11,7 +13,7 @@ pub struct PlanExplanation {
 }
 
 /// Represents a single node in the plan explanation
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ExplanationNode {
     pub operation: String,
     pub properties: Vec<(String, String)>,
@@ -32,6 +34,11 @@ impl PlanExplanation {
             total_cost: root.cost(),
             estimated_rows: root.estimated_rows(),
         }
+    }
+
+    pub fn to_json(&self) -> String {
+        to_string(self).unwrap()
+        
     }
 }
 
