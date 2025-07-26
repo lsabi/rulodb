@@ -179,7 +179,7 @@ async fn explain_query(
     let plan = planner.plan(&query)?;
     let plan = planner.optimize(plan)?;
 
-    let explanation = planner.explain(&plan);
+    let explanation = planner.explain(&plan).to_json();
     log::debug!("Plan explanation:\n{explanation}");
 
     /*
