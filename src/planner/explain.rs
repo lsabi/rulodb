@@ -35,11 +35,6 @@ impl PlanExplanation {
             estimated_rows: root.estimated_rows(),
         }
     }
-
-    pub fn to_json(&self) -> String {
-        to_string(self).unwrap()
-        
-    }
 }
 
 impl fmt::Display for PlanExplanation {
